@@ -1,206 +1,232 @@
 # CacaoSelva
 
-Prueba de concepto academica que demuestra que diferentes aplicaciones pueden
-consultar la misma informacion de lotes de cacao mediante una API HTTP, aplicando
-Arquitectura Limpia, principios SOLID y Clean Code.
+[![Pruebas](https://github.com/RengiCodeMaster/cacaoselva/actions/workflows/ci.yml/badge.svg)](https://github.com/RengiCodeMaster/cacaoselva/actions/workflows/ci.yml)
+![Java 21](https://img.shields.io/badge/Java-21-2F6B3B)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.x-6DB33F)
+![Arquitectura limpia](https://img.shields.io/badge/arquitectura-limpia-5B3A29)
 
-## 1. Objetivo
+CacaoSelva es una aplicación académica para administrar lotes de cacao desde
+distintos clientes conectados a una API REST común. La solución demuestra
+persistencia real, operaciones CRUD, comunicación HTTP, una interfaz Desktop en
+JavaFX, monitoreo automático y pruebas ejecutadas mediante integración continua.
 
-Construir una solucion con:
+El proyecto utiliza una estructura Maven multimódulo y conserva la dirección de
+dependencias de Arquitectura Limpia: el dominio y los casos de uso permanecen
+independientes de Spring, JavaFX, HTTP, JSON y la base de datos.
 
-1. API REST.
-2. Aplicacion Desktop (JavaFX).
-3. Monitor automatico en segundo plano.
-4. Dominio y casos de uso compartidos conceptualmente.
-5. Persistencia de datos mediante JPA.
-6. Pruebas automatizadas y pruebas de la API mediante Postman.
+## Informe del proyecto
 
-La aplicacion usa H2 en modo archivo de forma predeterminada, por lo que los datos
-permanecen despues de reiniciar la API. Tambien incluye un perfil para PostgreSQL.
+La documentación académica completa está disponible en:
 
-## 2. Tecnologias
+**[Ver o descargar el informe CacaoSelva en PDF](Informe_CacaoSelva.pdf)**
 
-- Java 21 (compilado con `--release 21`)
-- Maven (multimodulo)
-- Spring Boot 3.5.x / Spring Web
-- Spring Data JPA
-- H2 (archivo local) y PostgreSQL (perfil opcional)
-- JavaFX para Desktop
-- `java.net.http.HttpClient` para consumo HTTP
-- JUnit 5 y Mockito
-- Jackson para JSON
-- SLF4J / Logback para logging
+El informe incluye el análisis inicial, las mejoras implementadas, diagramas de
+arquitectura, persistencia, API REST, Desktop, Monitor, pruebas, resultados,
+conclusiones y referencias con presentación académica APA 7.
 
-No se utiliza Lombok: el codigo es explicito para facilitar su estudio.
+## Resultado final
 
-## 3. Arquitectura
+![Cliente Desktop de CacaoSelva](docs/images/cacaoselva-desktop.png)
 
-Arquitectura Limpia. La direccion conceptual de dependencias es:
+La aplicación Desktop permite consultar, buscar, filtrar, crear, actualizar y
+eliminar lotes. Las operaciones HTTP se ejecutan de forma asíncrona para no
+bloquear la interfaz.
 
-```text
-Interfaces / Frameworks
-        |
-        v
-Adaptadores
-        |
-        v
-Aplicacion
-        |
-        v
-Dominio
-```
+## Funcionalidades
 
-El modulo `domain` no depende de Spring, JavaFX, HTTP, JSON, base de datos,
-controladores ni frameworks externos. El modulo `application` tampoco depende de
-Spring: los beans se declaran desde `api/config/ApplicationConfig`.
+- Persistencia predeterminada en una base H2 almacenada en archivo.
+- Perfil alternativo para PostgreSQL mediante configuración externa.
+- Carga inicial condicional de 10 lotes, sin duplicarlos en cada reinicio.
+- CRUD completo mediante API REST.
+- Validación de identificador, socio, peso y estado.
+- Cliente Desktop JavaFX con filtros y gestión de registros.
+- Monitor configurable con detección de cambios, caídas y recuperación.
+- Respuestas de error HTTP consistentes.
+- 21 pruebas unitarias y de integración.
+- Ejecución automática de `mvn verify` mediante GitHub Actions.
+
+## Tecnologías
+
+| Tecnología | Uso |
+| --- | --- |
+| Java 21 | Lenguaje y plataforma principal |
+| Maven | Compilación y organización multimódulo |
+| Spring Boot 3.5.x | API REST y configuración |
+| Spring Data JPA | Persistencia y repositorios |
+| H2 | Base persistente local predeterminada |
+| PostgreSQL | Base opcional para ambientes compartidos |
+| JavaFX | Cliente Desktop |
+| Java HTTP Client | Comunicación con la API |
+| Jackson | Procesamiento JSON |
+| JUnit 5 y Mockito | Pruebas automatizadas |
+| GitHub Actions | Integración continua |
+
+No se utiliza Lombok. El código mantiene constructores, métodos y dependencias de
+forma explícita para facilitar su revisión académica.
+
+## Arquitectura
 
 ```mermaid
-flowchart TB
-    API["API REST"]
-    DESKTOP["Desktop JavaFX"]
-    MONITOR["Monitor"]
-
-    HTTP["Adaptador HTTP"]
-    JPA["Adaptador JPA"]
-    APP["Casos de uso"]
-    DOMAIN["Dominio"]
-    DB[(H2 / PostgreSQL)]
-
-    DESKTOP --> HTTP
-    MONITOR --> HTTP
-    HTTP --> API
-    API --> APP
-    APP --> JPA
-    JPA --> DB
-
-    APP --> DOMAIN
+flowchart LR
+    Desktop[Desktop JavaFX] --> HTTP[Adaptadores HTTP]
+    Monitor[Monitor] --> HTTP
+    HTTP --> API[API REST]
+    API --> App[Casos de uso]
+    App --> Domain[Dominio]
+    App --> JPA[Adaptador JPA]
+    JPA --> DB[(H2 / PostgreSQL)]
 ```
 
-## 4. Explicacion de modulos
+La dirección conceptual de dependencias es:
 
-| Modulo | Responsabilidad |
-| ------ | --------------- |
-| `domain` | Modelo de negocio puro (`Lote`, `EstadoLote`). |
-| `application` | Puertos, DTO, excepciones y casos de uso. No conoce frameworks. |
-| `infrastructure` | Adaptadores: repositorio JPA y clientes HTTP de consulta/comandos. |
-| `api` | API REST Spring Boot: controlador, DTOs, mapper y manejo global de errores. |
-| `desktop` | Aplicacion JavaFX que consume la API. |
-| `monitor` | Proceso periodico que consulta la API y registra los pendientes. |
+```text
+Interfaces y frameworks -> Adaptadores -> Aplicación -> Dominio
+```
 
-## 5. Estructura de carpetas
+### Responsabilidad de los módulos
+
+| Módulo | Responsabilidad |
+| --- | --- |
+| `domain` | Modelo puro: `Lote` y `EstadoLote`. |
+| `application` | Puertos, DTO, validaciones, excepciones y casos de uso. |
+| `infrastructure` | Adaptadores JPA y clientes HTTP. |
+| `api` | Controladores REST, configuración Spring y manejo de errores. |
+| `desktop` | Interfaz JavaFX para administrar lotes. |
+| `monitor` | Consulta periódica y detección de disponibilidad. |
+
+## Estructura
 
 ```text
 cacaoselva/
-|
-+-- pom.xml
-+-- README.md
-+-- .gitignore
-|
-+-- docs/
-|   +-- postman/
-|       +-- README.md
-|
-+-- domain/
-+-- application/
-+-- infrastructure/
-+-- api/
-+-- desktop/
-+-- monitor/
+|-- .github/workflows/ci.yml
+|-- api/
+|-- application/
+|-- desktop/
+|-- docs/
+|   |-- images/
+|   |-- postman/
+|   `-- ANALISIS_MEJORAS.md
+|-- domain/
+|-- infrastructure/
+|-- monitor/
+|-- Informe_CacaoSelva.pdf
+|-- pom.xml
+`-- README.md
 ```
 
-## 6. Como compilar
+## Requisitos
 
-Desde la raiz del proyecto:
+- JDK 21.
+- Maven 3.9 o superior.
+- Puerto local `5080` disponible.
+- PostgreSQL únicamente para el perfil opcional `postgres`.
+
+Comprueba las herramientas instaladas con:
+
+```bash
+java -version
+mvn -version
+```
+
+## Compilación y pruebas
+
+Desde la raíz del repositorio:
+
+```bash
+mvn clean verify
+```
+
+Este comando compila todos los módulos y ejecuta las 21 pruebas automatizadas.
+Para instalar los artefactos en el repositorio Maven local:
 
 ```bash
 mvn clean install
 ```
 
-Esto compila todos los modulos, ejecuta las pruebas unitarias e instala los
-artefactos en el repositorio local de Maven.
+## Ejecución
 
-Para ejecutar solo las pruebas:
-
-```bash
-mvn test
-```
-
-## 7. Como ejecutar la API
+### 1. API REST
 
 ```bash
 mvn -pl api spring-boot:run
 ```
 
-La API queda disponible en `http://localhost:5080`.
+La API queda disponible en `http://localhost:5080`. En el primer arranque se
+crea `data/cacaoselva.mv.db` y se insertan 10 registros solamente cuando la
+tabla está vacía.
 
-En el primer arranque se crea `data/cacaoselva.mv.db` y se cargan 10 lotes. La
-carga inicial solo se ejecuta cuando la tabla esta vacia.
-
-Tambien se puede empaquetar y ejecutar el jar:
+También puede ejecutarse el JAR:
 
 ```bash
 mvn -pl api -am package
 java -jar api/target/api-1.0.0-SNAPSHOT.jar
 ```
 
-Para usar PostgreSQL, crear la base `cacaoselvabd` y ejecutar:
+### 2. Desktop
 
-```bash
-mvn -pl api spring-boot:run -Dspring-boot.run.profiles=postgres
-```
-
-Las variables opcionales `DB_URL`, `DB_USERNAME` y `DB_PASSWORD` permiten cambiar
-la conexion sin guardar credenciales en el codigo.
-
-## 8. Como ejecutar Desktop
-
-Con la API en ejecucion:
+Con la API activa, abre otra terminal:
 
 ```bash
 mvn -pl desktop javafx:run
 ```
 
-Ventana: **CacaoSelva - Lotes**, con:
+### 3. Monitor
 
-- Tabla de lotes y actualizacion asincrona.
-- Filtros por socio y estado.
-- Formulario para crear y actualizar.
-- Eliminacion con confirmacion.
-- Mensajes de carga, resultado y error sin bloquear la interfaz.
-
-## 9. Como ejecutar Monitor
-
-Con la API en ejecucion:
+En una tercera terminal:
 
 ```bash
 mvn -pl monitor exec:java
 ```
 
-El monitor consulta cada 10 segundos y registra un resumen cuando cambia:
-
-```text
-Lotes: total=10, pendientes=6, liquidados=4
-```
-
-Si la API se detiene, registra la falla una sola vez y continua intentando. Al
-reiniciar la API informa que la conexion fue restablecida. El intervalo puede
-configurarse con `CACAOSELVA_MONITOR_INTERVAL_SECONDS` o con la propiedad Java
+El intervalo predeterminado es de 10 segundos. Puede configurarse mediante
+`CACAOSELVA_MONITOR_INTERVAL_SECONDS` o la propiedad Java
 `cacaoselva.monitor.interval.seconds`.
 
-## 10. Endpoints
+Ejemplo en PowerShell:
 
-| Metodo | Ruta | Resultado |
-| ------ | ---- | --------- |
-| GET | `/lotes` | 200 con los lotes almacenados |
-| GET | `/lotes/1` | 200 con el lote solicitado |
-| GET | `/lotes/999` | 404 Not Found |
-| GET | `/lotes/0` | 400 Bad Request |
-| GET | `/lotes/abc` | 400 Bad Request |
-| POST | `/lotes` | 201 con el lote creado |
-| PUT | `/lotes/{id}` | 200 con el lote actualizado |
-| DELETE | `/lotes/{id}` | 204 sin contenido |
+```powershell
+$env:CACAOSELVA_MONITOR_INTERVAL_SECONDS = "30"
+mvn -pl monitor exec:java
+```
 
-`POST` y `PUT` reciben el siguiente formato:
+## Persistencia
+
+La configuración predeterminada utiliza H2 en modo archivo. Los datos continúan
+disponibles después de detener y volver a iniciar la API.
+
+La persistencia fue comprobada mediante este flujo:
+
+1. Iniciar la API.
+2. Crear un lote con `POST /lotes`.
+3. Detener completamente el proceso.
+4. Iniciar nuevamente la API.
+5. Recuperar el mismo registro con `GET /lotes/{id}`.
+
+### Perfil PostgreSQL
+
+Después de crear la base `cacaoselvabd`:
+
+```bash
+mvn -pl api spring-boot:run -Dspring-boot.run.profiles=postgres
+```
+
+| Variable | Descripción |
+| --- | --- |
+| `DB_URL` | URL JDBC de PostgreSQL |
+| `DB_USERNAME` | Usuario de conexión |
+| `DB_PASSWORD` | Contraseña de conexión |
+
+## API REST
+
+| Método | Ruta | Respuesta |
+| --- | --- | --- |
+| `GET` | `/lotes` | `200` con todos los lotes |
+| `GET` | `/lotes/{id}` | `200`, `400` o `404` |
+| `POST` | `/lotes` | `201` con el lote creado |
+| `PUT` | `/lotes/{id}` | `200`, `400` o `404` |
+| `DELETE` | `/lotes/{id}` | `204`, `400` o `404` |
+
+Ejemplo para crear o actualizar:
 
 ```json
 {
@@ -210,55 +236,62 @@ configurarse con `CACAOSELVA_MONITOR_INTERVAL_SECONDS` o con la propiedad Java
 }
 ```
 
-El socio es obligatorio, el peso debe ser positivo y admite hasta dos decimales,
-y el estado debe ser `PENDIENTE` o `LIQUIDADO`.
+Reglas principales:
 
-## 11. Como probar con Postman
+- `socio` es obligatorio y admite hasta 120 caracteres.
+- `pesoKg` debe ser positivo y contener como máximo dos decimales.
+- `estado` debe ser `PENDIENTE` o `LIQUIDADO`.
+- Los identificadores deben ser enteros positivos.
 
-Ver [`docs/postman/README.md`](docs/postman/README.md). Coleccion
-**CacaoSelva - Pruebas API** con variable `baseUrl = http://localhost:5080`.
+La colección y guía de Postman están en
+[`docs/postman/README.md`](docs/postman/README.md).
 
-## 12. Principios SOLID aplicados
+## Monitor
 
-- **SRP**: Controller, UseCase, Repository, HTTP Adapter, JavaFX Controller y
-  Scheduler tienen responsabilidades separadas.
-- **OCP**: el adaptador JPA puede trabajar con H2 o PostgreSQL sin modificar los
-  casos de uso.
-- **LSP**: cualquier implementacion correcta de `LoteRepository` sustituye a otra.
-- **ISP**: interfaces pequenas y especificas (`LoteRepository`, `LoteQueryPort`).
-- **DIP**: los casos de uso dependen de `LoteRepository`, no de
-  `JpaLoteRepositoryAdapter`.
+El Monitor consulta periódicamente la API y genera un resumen:
 
-## 13. Decisiones de Clean Architecture
+```text
+Lotes: total=10, pendientes=6, liquidados=4
+```
 
-- `domain` y `application` no dependen de Spring.
-- Los casos de uso no llevan `@Service`; se construyen como beans en
-  `api/config/ApplicationConfig` (capa externa).
-- El controlador REST no contiene logica de negocio: delega en los casos de uso.
-- El controlador JavaFX no conoce `HttpRequest`, `HttpResponse` ni `ObjectMapper`;
-  esos detalles viven en `HttpLoteQueryAdapter`.
-- `baseUrl` y `timeout` se centralizan en `ApiHttpConfig`.
-- La llamada HTTP en Desktop se ejecuta de forma asincrona con `CompletableFuture`
-  y los controles se actualizan con `Platform.runLater`.
+Solo registra el resumen cuando existe un cambio. Si la API deja de responder,
+informa la caída una vez, continúa intentando y comunica la recuperación cuando
+vuelve a recibir una respuesta válida.
 
-## 14. Pruebas
+## Pruebas automatizadas
 
-Pruebas unitarias (JUnit 5 + Mockito) de:
+La suite cubre casos de uso, validaciones, persistencia JPA, carga inicial, CRUD
+REST mediante `MockMvc`, adaptadores HTTP y estados del Monitor.
 
-- `ListarLotesUseCase`
-- `BuscarLotePorIdUseCase` (lote existente, no encontrado, id nulo, cero y negativo)
-- `ContarLotesPendientesUseCase`
-- Casos de uso de creacion, actualizacion y eliminacion.
-- Integracion JPA y HTTP: carga inicial y CRUD completo con persistencia.
-- Adaptador HTTP utilizado por Desktop.
-- Resumen, cambios, caida y recuperacion del Monitor.
+| Área | Pruebas |
+| --- | ---: |
+| Aplicación | 15 |
+| Infraestructura | 1 |
+| API | 1 |
+| Monitor | 4 |
+| **Total** | **21** |
 
-GitHub Actions ejecuta `mvn verify` automaticamente en cada `push` y
-`pull_request` mediante `.github/workflows/ci.yml`.
+El flujo de [GitHub Actions](https://github.com/RengiCodeMaster/cacaoselva/actions)
+ejecuta `mvn --batch-mode --no-transfer-progress verify` en cada `push` y
+`pull_request` sobre `main`.
 
-## 15. Limitaciones actuales
+## Principios de diseño
 
-- Sin autenticacion ni autorizacion.
-- Sin despliegue ni contenedores.
-- H2 es apropiado para la demostracion local; para trabajo compartido se recomienda
-  activar el perfil PostgreSQL.
+- **SRP:** cada módulo conserva una responsabilidad principal.
+- **OCP:** H2 y PostgreSQL comparten el mismo contrato JPA.
+- **LSP:** las implementaciones de repositorio son sustituibles.
+- **ISP:** consulta y comandos HTTP utilizan interfaces específicas.
+- **DIP:** la lógica depende de puertos, no de implementaciones concretas.
+
+## Limitaciones y evolución futura
+
+La entrega no incorpora autenticación, autorización, migraciones versionadas ni
+despliegue productivo. Como evolución se recomienda añadir Flyway, contenedores,
+paginación, auditoría, perfiles por ambiente y pruebas visuales automatizadas.
+
+## Información académica
+
+- **Autor:** Juan Manuel Rengifo Fretel
+- **Curso:** Construcción de Software II
+- **Docente:** Ríos Rivera, Carlos Abraham
+- **Semestre:** 2026-II
