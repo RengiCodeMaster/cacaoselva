@@ -1,0 +1,29 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+.vscode/
+
+.classpath
+.project
+.settings/
+
+*.log
+*.err
+.DS_Store
+
+# Archivos auxiliares de LaTeX
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.toc
+
+# Base de datos H2 local
+data/
+*.mv.db
+*.trace.db

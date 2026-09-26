@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="pe.edu.cacaoselva.desktop.controller.LotesController"
+      spacing="12.0" style="-fx-background-color: #f5f6f4;">
+    <padding>
+        <Insets top="18.0" right="20.0" bottom="18.0" left="20.0"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label text="CacaoSelva" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #24452d;"/>
+        <Label text="Gestion de lotes" style="-fx-font-size: 14px; -fx-text-fill: #52605a;"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Button fx:id="consultarButton" text="Actualizar" onAction="#onConsultar"/>
+    </HBox>
+
+    <HBox spacing="10.0" alignment="CENTER_LEFT">
+        <Label text="Buscar socio"/>
+        <TextField fx:id="filtroSocioField" promptText="Nombre" HBox.hgrow="ALWAYS"/>
+        <Label text="Estado"/>
+        <ComboBox fx:id="filtroEstadoCombo" prefWidth="150.0"/>
+    </HBox>
+
+    <TableView fx:id="lotesTable" VBox.vgrow="ALWAYS" prefHeight="320.0">
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID" prefWidth="70.0"/>
+            <TableColumn fx:id="socioColumn" text="Socio" prefWidth="310.0"/>
+            <TableColumn fx:id="pesoColumn" text="Peso (kg)" prefWidth="150.0"/>
+            <TableColumn fx:id="estadoColumn" text="Estado" prefWidth="170.0"/>
+        </columns>
+        <placeholder>
+            <Label text="No hay lotes para mostrar"/>
+        </placeholder>
+    </TableView>
+
+    <Separator/>
+    <Label text="Datos del lote" style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+
+    <GridPane hgap="10.0" vgap="10.0">
+        <columnConstraints>
+            <ColumnConstraints minWidth="70.0"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+            <ColumnConstraints minWidth="75.0"/>
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="150.0"/>
+        </columnConstraints>
+        <Label text="Socio" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="socioField" promptText="Nombre completo" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label text="Peso" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+        <TextField fx:id="pesoField" promptText="0.00" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+        <Label text="Estado" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <ComboBox fx:id="estadoCombo" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+    </GridPane>
+
+    <HBox spacing="10.0" alignment="CENTER_RIGHT">
+        <Label fx:id="estadoLabel" text="Listo" HBox.hgrow="ALWAYS" style="-fx-text-fill: #405249;"/>
+        <Button text="Nuevo" onAction="#onNuevo"/>
+        <Button fx:id="eliminarButton" text="Eliminar" onAction="#onEliminar"/>
+        <Button fx:id="guardarButton" text="Guardar" onAction="#onGuardar" defaultButton="true"/>
+    </HBox>
+</VBox>
